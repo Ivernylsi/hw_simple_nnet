@@ -12,10 +12,10 @@ template <typename L1, typename... Ls> struct Layer {
                 "OutPut of layer and input of next should be the same");
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
-    return NextL.forward(in);
+    return NextL.forward(CurrL.forward(in));
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    return NextL.backward(in);
+    return CurrL.backward(NextL.backward(in));
   }
 
 private:

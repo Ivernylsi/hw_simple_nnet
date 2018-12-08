@@ -1,12 +1,24 @@
 #include <iostream>
 #include <n_network/Network.hpp>
 
-template struct Network<Input<10>, Dense<10, 20>, Dense<20, 20>, Output<20>>;
-using mynet = Network<Input<10>, Dense<10, 20>, Dense<20, 20>, Output<20>>;
+//clang-format off
+template struct Network<Input<10>, 
+                        Relu<10>,
+                        Dense<10, 20>, 
+                        Dense<20, 20>, 
+                        Output<20>>;
 
+using mynet = Network<Input<10>, 
+                      Relu<10>,
+                      Dense<10, 20>, 
+                      Dense<20, 20>, 
+                      Output<20>>;
+//clang-format on
 int main() {
   mynet net;
-  Eigen::Vector3d a(1, 1, 1);
+  Eigen::MatrixXd a(1, 10);
+  a.setOnes();
+
   std::cout << " forward\n" << net.forward(a) << std::endl;
 
   std::cout << " backward\n" << net.backward(a) << std::endl;
