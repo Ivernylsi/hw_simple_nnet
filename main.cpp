@@ -36,6 +36,7 @@ int main() {
   std::cout << r.forward(aa) << std::endl;
 
   auto y = getLabels();
-
+  auto X = getTrainData();
+  std::cout << X.row(0) << std::endl;
   return 0;
 }

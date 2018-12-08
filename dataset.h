@@ -2,6 +2,7 @@
 #define DATASET_H
 #include <Eigen/Eigen>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -19,15 +20,16 @@ Eigen::MatrixXd encodeMatrix(const std::vector<int> &nums) {
   return ans;
 }
 
-Eigen::MatrixXd encodeData(const std::vector<Eigen::MatrixXd> &vec) {
-  int size = vec[0].rows() * vec[0].cols();
+Eigen::MatrixXd
+encodeData(const std::vector<Eigen::VectorXd,
+                             Eigen::aligned_allocator<Eigen::VectorXd>> &vec) {
+  int size = vec[0].rows();
+  std::cout << vec.size() << " " << size <<std::endl;
   Eigen::MatrixXd ans(vec.size(), size);
   for (size_t i = 0; i < vec.size(); ++i) {
-    Eigen::VectorXd a = Eigen::Map<const Eigen::VectorXd>(vec[i].data(), size);
-
-    ans.row(i) = a.transpose();
+    std::cout << vec[i].transpose();
+    ans.row(i) = vec[i].transpose();
   }
-
   return ans;
 }
 
@@ -69,7 +71,7 @@ Eigen::MatrixXd read_Mnist_Label(std::string filename) {
 }
 
 Eigen::MatrixXd read_Mnist(std::string filename) {
-  std::vector<Eigen::MatrixXd> vec;
+  Eigen::MatrixXd ans = Eigen::MatrixXd::Zero(60000, 784);
   std::ifstream file(filename, std::ios::binary);
   if (file.is_open()) {
     int magic_number = 0;
@@ -84,19 +86,20 @@ Eigen::MatrixXd read_Mnist(std::string filename) {
     n_rows = ReverseInt(n_rows);
     file.read((char *)&n_cols, sizeof(n_cols));
     n_cols = ReverseInt(n_cols);
+
     for (int i = 0; i < number_of_images; ++i) {
-      Eigen::MatrixXd tp = Eigen::MatrixXd::Zero(n_rows, n_cols);
+      Eigen::VectorXd tp(n_rows * n_cols);
       for (int r = 0; r < n_rows; ++r) {
         for (int c = 0; c < n_cols; ++c) {
           unsigned char temp = 0;
           file.read((char *)&temp, sizeof(temp));
-          tp(r, c) = (int)temp;
+          tp(r * n_cols + c) = (int)temp;
         }
+      ans.row(i) = tp.transpose();
       }
-      vec.push_back(tp);
     }
   }
-  return encodeData(vec);
+  return ans;
 }
 
 #endif // DATASET_H
