@@ -8,14 +8,13 @@ struct MSE {
 
   double forward(const Eigen::MatrixXd &in, const Eigen::MatrixXd &y) {
     input = in;
-    return (in.array() - y.array()).abs2().mean();
+    return (in.array() - y.array()).abs2().sum()/y.rows();
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &y) {
     Eigen::MatrixXd kek = (input.array() - y.array()) / y.rows();
     return kek;
   }
-
 private:
   Eigen::MatrixXd input;
 };

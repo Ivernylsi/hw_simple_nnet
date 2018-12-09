@@ -2,7 +2,11 @@
 #define ACTIVATIONS_HPP
 #include <Eigen/Eigen>
 
-template <size_t N> struct Relu {
+struct ActivationBase {
+  Eigen::MatrixXd input;
+};
+
+template <size_t N> struct Relu : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
@@ -14,12 +18,9 @@ template <size_t N> struct Relu {
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     return forward(input) * in;
   }
-
-private:
-  Eigen::MatrixXd input;
 };
 
-template <size_t N> struct LeakyRelu {
+template <size_t N> struct LeakyRelu : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
@@ -37,12 +38,9 @@ template <size_t N> struct LeakyRelu {
     input = input.unaryExpr(leakyrelu);
     return input.array() * in.array();
   }
-
-private:
-  Eigen::MatrixXd input;
 };
 
-template <size_t N> struct SoftPlus {
+template <size_t N> struct SoftPlus : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
@@ -54,12 +52,9 @@ template <size_t N> struct SoftPlus {
     auto softplus = [](const auto &el) { return exp(el) / (1 + exp(el)); };
     return input.unaryExpr(softplus) * in;
   }
-
-private:
-  Eigen::MatrixXd input;
 };
 
-template <size_t N> struct Sigmoid {
+template <size_t N> struct Sigmoid : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
@@ -72,12 +67,9 @@ template <size_t N> struct Sigmoid {
     auto temp = forward(input);
     return (temp.array() / (1 - temp.array())) * in.array();
   }
-
-private:
-  Eigen::MatrixXd input;
 };
 
-template <size_t N> struct SoftMax {
+template <size_t N> struct SoftMax : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
@@ -89,14 +81,14 @@ template <size_t N> struct SoftMax {
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {}
 };
 
-template <size_t N> struct LogSoftMax {
+template <size_t N> struct LogSoftMax : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     auto (*fexp)(double)->double = std::exp;
     auto (*flog)(double)->double = std::log;
-
+    input = in;
     decltype(in) expon = in.unaryExpr(fexp);
     decltype(in) out = expon / expon.sum();
 

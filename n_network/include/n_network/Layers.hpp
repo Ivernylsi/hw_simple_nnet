@@ -4,6 +4,7 @@
 #include <random>
 #include <iostream>
 
+
 template <size_t N> struct Input {
   static const size_t InN = N;
   static const size_t OutN = N;
@@ -44,16 +45,12 @@ template <size_t N> struct Output {
   static const size_t OutN = N;
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
-    input = in;
     return in;
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     return in * Eigen::VectorXd::Ones(InN);
   }
-
-private:
-  Eigen::MatrixXd input;
 };
 
 template <size_t N> struct DropOut {
