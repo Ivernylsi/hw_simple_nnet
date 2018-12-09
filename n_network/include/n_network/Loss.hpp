@@ -25,7 +25,7 @@ struct CrossEntropy {
     auto logref = [](const auto &y) { return std::log(y); };
     auto ans = in;
     ans = ans.unaryExpr(logref);
-    return -(ans.array() * y.array()).sum();
+    return -(ans.array() * y.array()).sum() / y.rows();
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &y) {
@@ -52,7 +52,7 @@ struct CrossEntropySoftMax {
     auto logref = [](const auto &a) { return std::log(a); };
     auto ans = expon;
     ans = ans.unaryExpr(logref);
-    return -(ans.array() * y.array()).sum();
+    return -(ans.array() * y.array()).sum() / y.rows();
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &y) {

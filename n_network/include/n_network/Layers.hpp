@@ -39,7 +39,7 @@ template <size_t N, size_t K> struct Dense {
     Eigen::MatrixXd grad = input.transpose() * in;
     input.resize(0, 0);
     w -= 0.1 * grad;
-    return grad;
+    return w*in;
   }
 
 private:

@@ -45,23 +45,38 @@ auto interpretAns(const Eigen::MatrixXd &v) {
   return ans;
 }
 
+double calc_acc(mynet &net, const Eigen::MatrixXd &X,
+                const Eigen::MatrixXd &y) {
+  double ans = 0;
+  for (int i = 0; i < y.rows(); ++i) {
+    auto y_p = net.forward(X.block(i, 0, 1, ENCODED_SIZE));
+    y_p = interpretAns(y_p);
+    auto a = y_p - y.block(i, 0, 1, 10);
+    if (a.norm() == 0.0)
+      ans++;
+  }
+  return ans / y.rows();
+}
+
 int main() {
 
   mynet net;
   auto y = getLabels();
   auto X = getTrainData();
   std::cout << "Dataset reading completed.\n";
-
-  const int size = 1000;
+  const int size = 100;
   double ans;
-  for (int k = 0; k < 100; ++k) {
-    for (int i = 0; i < 10; ++i) {
+  for (int k = 0; k < 10; ++k) {
+    for (int i = 0; i < 1000; i += 100) {
 
       ans = net.training<loss::CrossEntropySoftMax>(
-          X.block(size * i, 0, size * (i + 1), 784),
-          y.block(size * i, 0, size * (i + 1), 10), 1);
+          X.block(size + i, 0, size + (i + 1), 784),
+          y.block(size + i, 0, size + (i + 1), 10));
+      std::cout << "Acc : "
+                << calc_acc(net, X.block(size + i, 0, size + (i + 1), 784),
+                            y.block(size + i, 0, size + (i + 1), 10)) << std::endl;
+      std::cout << k << " Loss on " << ans << std::endl;
     }
-    std::cout << k << " Loss os " << ans << std::endl;
   }
   return 0;
 }
