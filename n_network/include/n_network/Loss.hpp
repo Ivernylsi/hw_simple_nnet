@@ -56,7 +56,7 @@ struct CrossEntropySoftMax {
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &y) {
-    Eigen::MatrixXd kek = (input.array() - y.array()) / y.rows();
+    Eigen::MatrixXd kek = (input - y) / y.rows();
     return kek;
   }
 

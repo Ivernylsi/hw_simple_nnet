@@ -1,6 +1,7 @@
 #ifndef ACTIVATIONS_HPP
 #define ACTIVATIONS_HPP
 #include <Eigen/Eigen>
+#include <iostream>
 
 struct ActivationBase {
   Eigen::MatrixXd input;
@@ -11,14 +12,14 @@ template <size_t N> struct Relu : ActivationBase {
   static const size_t OutN = N;
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
-    auto relu = [](const auto &el) { return std::max(el, 0.0); };
+    auto relu = [](const double &el) { return std::max(el, 0.0); };
     input = in;
     return in.unaryExpr(relu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     auto relu = [](const auto &el) { return (el > 0 ? 1.0 : 0.0); };
     input = input.unaryExpr(relu);
-    return input * in;
+    return input.array() * in.array();
   }
 };
 
@@ -26,19 +27,19 @@ template <size_t N> struct LeakyRelu : ActivationBase {
   static const size_t InN = N;
   static const size_t OutN = N;
 
-  const double alpha = 0.01;
+  const double alpha = 0.001;
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     auto leakyrelu = [&](const auto &el) {
-      return (el > 0 ? el : -alpha * el);
+      return (el > 0 ? el : alpha * el);
     };
     input = in;
     return in.unaryExpr(leakyrelu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    auto leakyrelu = [&](const auto &el) { return (el > 0 ? 1 : -alpha); };
+    auto leakyrelu = [&](const auto &el) { return (el > 0 ? 1 : alpha); };
     input = input.unaryExpr(leakyrelu);
-    return input.array() * in.array();
+    return in * input;
   }
 };
 

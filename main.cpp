@@ -1,4 +1,5 @@
 #include "dataset.h"
+#include <chrono>
 #include <iostream>
 #include <n_network/Network.hpp>
 #include <vector>
@@ -16,8 +17,8 @@ using mynet = Network<Input<784>,
                       Output<10>>;
                       */
 using mynet = Network<Input<784>,
-                      Dense<784, 10>,
-                      LeakyRelu<10>,
+                      Dense<784, 100>,
+                      Dense<100, 10>,
                       Output<10>>;
 // clang-format on
 
@@ -64,19 +65,30 @@ int main() {
   auto y = getLabels();
   auto X = getTrainData();
   std::cout << "Dataset reading completed.\n";
-  const int size = 100;
+  const int size = 500;
   double ans;
-  for (int k = 0; k < 10; ++k) {
-    for (int i = 0; i < 1000; i += 100) {
+
+  for (int k = 0; k < 100; ++k) {
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 1; i += 1) {
 
       ans = net.training<loss::CrossEntropySoftMax>(
-          X.block(size + i, 0, size + (i + 1), 784),
-          y.block(size + i, 0, size + (i + 1), 10));
-      std::cout << "Acc : "
-                << calc_acc(net, X.block(size + i, 0, size + (i + 1), 784),
-                            y.block(size + i, 0, size + (i + 1), 10)) << std::endl;
-      std::cout << k << " Loss on " << ans << std::endl;
+          X.block(size * i, 0, size * (i + 1), 784),
+          y.block(size * i, 0, size * (i + 1), 10));
+
     }
+    std::cout << "Acc : "
+              << calc_acc(net, X.block(X.rows() - 10000, 0, 9999, 784),
+                          y.block(X.rows() - 10000, 0, 9999, 10))
+              << std::endl;
+    std::cout << " Loss on " << ans << std::endl;
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    float time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(stop - start)
+            .count();
+    std::cout << " Time = " << time << std::endl;
   }
   return 0;
 }

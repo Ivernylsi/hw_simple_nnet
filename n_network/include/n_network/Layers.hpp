@@ -4,14 +4,6 @@
 #include <iostream>
 #include <random>
 
-namespace {
-double getNormal(const double &) {
-  std::normal_distribution<double> runif(-1.0, 1.0);
-  std::mt19937 rng;
-  return runif(rng);
-}
-} // namespace
-
 template <size_t N> struct Input {
   static const size_t InN = N;
   static const size_t OutN = N;
@@ -26,8 +18,13 @@ template <size_t N, size_t K> struct Dense {
   static const size_t OutN = K;
 
   Dense() {
-    auto kek = [](auto &a) { return getNormal(a);};
-    w = Eigen::MatrixXd(InN, OutN).unaryExpr(kek);
+  std::normal_distribution<double> runif(0.0, 0.1);
+  std::mt19937 rng;
+
+    w = Eigen::MatrixXd(InN, OutN);
+    for(int i = 0; i < InN; ++i) 
+      for(int j = 0; j < OutN; ++j)
+        w(i,j) = runif(rng);
   }
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
@@ -37,9 +34,9 @@ template <size_t N, size_t K> struct Dense {
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     Eigen::MatrixXd grad = input.transpose() * in;
-    input.resize(0, 0);
-    w -= 0.1 * grad;
-    return w*in;
+
+    w -= 0.01 * grad;
+    return  in * w.transpose();
   }
 
 private:
