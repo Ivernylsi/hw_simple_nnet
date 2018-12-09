@@ -20,19 +20,6 @@ Eigen::MatrixXd encodeMatrix(const std::vector<int> &nums) {
   return ans;
 }
 
-Eigen::MatrixXd
-encodeData(const std::vector<Eigen::VectorXd,
-                             Eigen::aligned_allocator<Eigen::VectorXd>> &vec) {
-  int size = vec[0].rows();
-  std::cout << vec.size() << " " << size <<std::endl;
-  Eigen::MatrixXd ans(vec.size(), size);
-  for (size_t i = 0; i < vec.size(); ++i) {
-    std::cout << vec[i].transpose();
-    ans.row(i) = vec[i].transpose();
-  }
-  return ans;
-}
-
 ////////////////////////////////////////////////
 // code for reading mnist data was taken from
 // http://eric-yuan.me/cpp-read-mnist/

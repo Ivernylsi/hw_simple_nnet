@@ -26,7 +26,7 @@ private:
 template <typename L1> struct Layer<L1> {
   using curr = L1;
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) { return in; }
-  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) { return in.transpose(); }
+  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) { return in; }
 
 private:
   curr Currl;

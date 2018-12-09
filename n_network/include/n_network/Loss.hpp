@@ -12,7 +12,8 @@ struct MSE {
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &y) {
-    return -2 * (input.array() - y.array());
+    Eigen::MatrixXd kek = (input.array() - y.array()) / y.rows();
+    return kek;
   }
 
 private:

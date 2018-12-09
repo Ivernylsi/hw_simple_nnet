@@ -2,8 +2,6 @@
 #define ACTIVATIONS_HPP
 #include <Eigen/Eigen>
 
-
-
 template <size_t N> struct Relu {
   static const size_t InN = N;
   static const size_t OutN = N;
@@ -14,9 +12,10 @@ template <size_t N> struct Relu {
     return in.unaryExpr(relu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    return forward(input) * in;    
+    return forward(input) * in;
   }
-  private:
+
+private:
   Eigen::MatrixXd input;
 };
 
@@ -34,13 +33,12 @@ template <size_t N> struct LeakyRelu {
     return in.unaryExpr(leakyrelu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-     auto leakyrelu = [&](const auto &el) {
-      return (el >= 0 ? 1 : alpha);
-    };
-    input = input.unaryExpr(leakyrelu); 
-    return  input.array() * in.array(); 
+    auto leakyrelu = [&](const auto &el) { return (el >= 0 ? 1 : alpha); };
+    input = input.unaryExpr(leakyrelu);
+    return input.array() * in.array();
   }
-  private:
+
+private:
   Eigen::MatrixXd input;
 };
 
@@ -52,7 +50,13 @@ template <size_t N> struct SoftPlus {
     auto softplus = [](const auto &el) { return std::log(1 + std::exp(el)); };
     return in.unaryExpr(softplus);
   }
-  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {}
+  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
+    auto softplus = [](const auto &el) { return exp(el) / (1 + exp(el)); };
+    return input.unaryExpr(softplus) * in;
+  }
+
+private:
+  Eigen::MatrixXd input;
 };
 
 template <size_t N> struct Sigmoid {
@@ -66,9 +70,10 @@ template <size_t N> struct Sigmoid {
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     auto temp = forward(input);
-    return (temp.array() / (1 - temp.array()) ) * in.array();
+    return (temp.array() / (1 - temp.array())) * in.array();
   }
-  private:
+
+private:
   Eigen::MatrixXd input;
 };
 
@@ -81,9 +86,7 @@ template <size_t N> struct SoftMax {
     decltype(in) expon = in.unaryExpr(fexp);
     return expon / expon.sum();
   }
-  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-  
-  }
+  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {}
 };
 
 template <size_t N> struct LogSoftMax {

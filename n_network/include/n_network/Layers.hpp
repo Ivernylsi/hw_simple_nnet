@@ -2,6 +2,7 @@
 #define LAYERS_HPP
 #include <Eigen/Eigen>
 #include <random>
+#include <iostream>
 
 template <size_t N> struct Input {
   static const size_t InN = N;
@@ -16,7 +17,10 @@ template <size_t N, size_t K> struct Dense {
   static const size_t InN = N;
   static const size_t OutN = K;
 
-  Dense() { w.setZero(); }
+  Dense() { 
+    w = Eigen::MatrixXd(InN, OutN);
+    w.setZero();
+    w/=1000; }
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     input = in;
@@ -26,13 +30,13 @@ template <size_t N, size_t K> struct Dense {
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     Eigen::MatrixXd grad = input.transpose() * in;
 
-    w -= 0.001 * grad;
+    w -= 0.0001 * grad / (grad.rows() * grad.cols());
     return grad;
   }
 
 private:
   Eigen::MatrixXd input;
-  Eigen::Matrix<double, InN, OutN> w;
+  Eigen::MatrixXd w;
 };
 
 template <size_t N> struct Output {
@@ -45,7 +49,7 @@ template <size_t N> struct Output {
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    return in(0, 0) * Eigen::VectorXd::Ones(InN);
+    return in * Eigen::VectorXd::Ones(InN);
   }
 
 private:

@@ -3,13 +3,22 @@
 #include <n_network/Network.hpp>
 #include <vector>
 
-//clang-format off
-template struct Network<Input<10>, Relu<10>, Dense<10, 20>, Dense<20, 20>,
-                        Output<20>>;
+const int ENCODED_SIZE = 784;
 
-using mynet =
-    Network<Input<10>, Relu<10>, Dense<10, 20>, Dense<20, 20>, Output<20>>;
-//clang-format on
+// clang-format off
+/*
+using mynet = Network<Input<784>, 
+                      Dense<784, 300>, 
+                      Relu<300>, 
+                      Dense<300, 90>,
+                      Relu<90>, 
+                      Dense<90, 10>, 
+                      Output<10>>;
+                      */
+using mynet = Network<Input<784>,
+                      Dense<784, 10>,
+                      Output<10>>;
+// clang-format on
 
 Eigen::MatrixXd getLabels() {
   return read_Mnist_Label(
@@ -23,20 +32,11 @@ Eigen::MatrixXd getTrainData() {
 int main() {
 
   mynet net;
-  Eigen::MatrixXd a(1, 10);
-  a.setOnes();
-
-  std::cout << " forward\n" << net.forward(a) << std::endl;
-
-  std::cout << " backward\n" << net.backward(a) << std::endl;
-
-  LeakyRelu<10> r;
-  Eigen::VectorXd aa(6);
-  aa << -1, 1, 1, 0, -5, 10;
-  std::cout << r.forward(aa) << std::endl;
-
   auto y = getLabels();
   auto X = getTrainData();
-  std::cout << X.row(0) << std::endl;
+  std::cout << "Dataset reading completed.\n";
+
+  const int size = 100;
+  net.training(X.block(0, 0, size, 784), y.block(0, 0, size, 10), 10);
   return 0;
 }
