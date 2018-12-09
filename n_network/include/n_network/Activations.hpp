@@ -16,7 +16,9 @@ template <size_t N> struct Relu : ActivationBase {
     return in.unaryExpr(relu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    return forward(input) * in;
+    auto relu = [](const auto &el) { return (el > 0 ? 1.0 : 0.0); };
+    input = input.unaryExpr(relu);
+    return input * in;
   }
 };
 
@@ -28,13 +30,13 @@ template <size_t N> struct LeakyRelu : ActivationBase {
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     auto leakyrelu = [&](const auto &el) {
-      return (el >= 0 ? el : alpha * el);
+      return (el > 0 ? el : -alpha * el);
     };
     input = in;
     return in.unaryExpr(leakyrelu);
   }
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    auto leakyrelu = [&](const auto &el) { return (el >= 0 ? 1 : alpha); };
+    auto leakyrelu = [&](const auto &el) { return (el > 0 ? 1 : -alpha); };
     input = input.unaryExpr(leakyrelu);
     return input.array() * in.array();
   }
@@ -75,10 +77,27 @@ template <size_t N> struct SoftMax : ActivationBase {
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     auto (*fexp)(double)->double = std::exp;
+    input = in;
     decltype(in) expon = in.unaryExpr(fexp);
     return expon / expon.sum();
   }
-  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {}
+  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
+    auto fexp = [](const auto &a) { return std::exp(a);};
+    Eigen::MatrixXd expon = input.unaryExpr(fexp);
+    expon /= expon.sum();
+    auto deriv = [&](int i, int j) {
+      if (i == j)
+        return expon(i) * (1 - expon(i));
+      else
+        return -expon(i) * expon(j);
+    };
+    Eigen::MatrixXd out = input;
+    for (int i = 0; i < out.rows(); ++i)
+      for (int j = 0; j < out.cols(); ++j) {
+        out(i, j) = deriv(i, j);
+      }
+    return out * in;
+  }
 };
 
 template <size_t N> struct LogSoftMax : ActivationBase {
@@ -94,7 +113,26 @@ template <size_t N> struct LogSoftMax : ActivationBase {
 
     return out.unaryExpr(flog);
   }
-  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {}
+  Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
+    auto (*fexp)(double)->double = std::exp;
+    Eigen::MatrixXd expon = input.unaryExpr(fexp);
+    expon /= expon.sum();
+    auto deriv = [&](int i, int j) {
+      if (i == j)
+        return expon(i) * (1 - expon(i));
+      else
+        return -expon(i) * expon(j);
+    };
+    Eigen::MatrixXd out(InN, OutN);
+    for (int i = 0; i < out.rows(); ++i)
+      for (int j = 0; j < out.cols(); ++j) {
+        out(i, j) = deriv(i, j);
+      }
+    Eigen::MatrixXd log = input;
+    auto (*flog)(double)->double = std::log;
+    input = input.unaryExpr(flog);
+    return input * out * in;
+  }
 };
 
 #endif // ACTIVATIONS_HPP

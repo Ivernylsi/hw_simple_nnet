@@ -14,18 +14,20 @@ template <typename L1, typename... Ls> struct Network {
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) { return L.backward(in); }
 
   template <typename Loss = loss::MSE>
-  void training(const Eigen::MatrixXd &X, const Eigen::MatrixXd &y,
+  double training(const Eigen::MatrixXd &X, const Eigen::MatrixXd &y,
                 const int iter = 100) {
     Loss loss;
+    double a;
     for (int i = 0; i < iter; ++i) {
       auto f = forward(X);
 
-      double a = loss.forward(f, y);
-      printf("Loss on iteration %d : %f\n", i, a);
+      a = loss.forward(f, y);
+     // if(i % 100 == 0)
+//      printf("Loss on iteration %d : %f\n", i, a);
       auto l = loss.backward(y);
-//      l = Eigen::VectorXd::Ones(l.rows(), 1) * a;
       backward(l);
     }
+    return a;
   }
 
 private:

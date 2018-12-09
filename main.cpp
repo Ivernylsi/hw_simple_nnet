@@ -17,6 +17,7 @@ using mynet = Network<Input<784>,
                       */
 using mynet = Network<Input<784>,
                       Dense<784, 10>,
+                      LeakyRelu<10>,
                       Output<10>>;
 // clang-format on
 
@@ -52,12 +53,13 @@ int main() {
 
   const int size = 1000;
 
+  for(int k = 0; k < 10; ++k)
   for (int i = 0; i < 10; ++i) {
 
-    net.training(X.block(size * i, 0, size * (i + 1), 784),
-                 y.block(size * i, 0, size * (i + 1), 10), 10);
+    double ans = net.training<loss::CrossEntropySoftMax>(X.block(size * i, 0, size * (i + 1), 784),
+                                     y.block(size * i, 0, size * (i + 1), 10),
+                                     10);
+    std::cout << k << " Loss os " << ans << std::endl;
   }
-  std::cout << y.row(0) << std::endl;
-  std::cout << interpretAns(net.forward(X.row(0))) << std::endl;
   return 0;
 }

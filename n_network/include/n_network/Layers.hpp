@@ -20,8 +20,8 @@ template <size_t N, size_t K> struct Dense {
 
   Dense() { 
     w = Eigen::MatrixXd(InN, OutN);
-    w.setZero();
-    w/=1000; }
+    w.setOnes();
+    w/=100000; }
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     input = in;
@@ -30,8 +30,8 @@ template <size_t N, size_t K> struct Dense {
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     Eigen::MatrixXd grad = input.transpose() * in;
-
-    w -= 0.0001 * grad / (grad.rows() * grad.cols());
+    input.resize(0,0); 
+    w -= 0.0001 * grad ;
     return grad;
   }
 
