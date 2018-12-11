@@ -1,5 +1,6 @@
 #include "dataset.h"
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <n_network/Network.hpp>
 #include <vector>
@@ -17,8 +18,11 @@ using mynet = Network<Input<784>,
                       Output<10>>;
                       */
 using mynet = Network<Input<784>,
-                      Dense<784, 100>,
-                      Dense<100, 10>,
+                      Dense<784, 300>,
+                      Relu<300>,
+                      Dense<300, 150>,
+                      Relu<150>,
+                      Dense<150, 10>,
                       Output<10>>;
 // clang-format on
 
@@ -65,23 +69,25 @@ int main() {
   auto y = getLabels();
   auto X = getTrainData();
   std::cout << "Dataset reading completed.\n";
-  const int size = 500;
+  const int size = 128;
   double ans;
 
-  for (int k = 0; k < 100; ++k) {
+loss::CrossEntropySoftMax loss;
+  std::ofstream file("out_big_CESM.txt");
+  for (int k = 0; k < 5; ++k) {
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 1; i += 1) {
+    for (int i = 0; i < 200; i += 1) {
 
       ans = net.training<loss::CrossEntropySoftMax>(
           X.block(size * i, 0, size * (i + 1), 784),
           y.block(size * i, 0, size * (i + 1), 10));
-
     }
-    std::cout << "Acc : "
-              << calc_acc(net, X.block(X.rows() - 10000, 0, 9999, 784),
-                          y.block(X.rows() - 10000, 0, 9999, 10))
-              << std::endl;
+    double acc = calc_acc(net, X.block(X.rows() - 10000, 0, 9999, 784),
+                          y.block(X.rows() - 10000, 0, 9999, 10));
+    
+    ans = loss.forward(X, y);
+    std::cout << "Acc : " << acc << std::endl;
     std::cout << " Loss on " << ans << std::endl;
 
     auto stop = std::chrono::high_resolution_clock::now();
@@ -89,6 +95,7 @@ int main() {
         std::chrono::duration_cast<std::chrono::milliseconds>(stop - start)
             .count();
     std::cout << " Time = " << time << std::endl;
+    file << k << "," << acc << "," << ans << "\n";
   }
   return 0;
 }

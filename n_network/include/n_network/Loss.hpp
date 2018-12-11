@@ -46,7 +46,9 @@ struct CrossEntropySoftMax {
     input = in;
     Eigen::MatrixXd expon = input.unaryExpr(fexp);
     for(int i = 0; i < expon.rows(); ++i)
-    expon.row(i) /= expon.row(i).sum();
+      expon.row(i) /= expon.row(i).sum();
+
+//    expon = expon * (expon * Eigen::VectorXd::Ones(expon.cols(), 1)).asDiagonal().inverse();
 
     // crossentropy part
     auto logref = [](const auto &a) { return std::log(a); };

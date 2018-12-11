@@ -25,23 +25,26 @@ template <size_t N, size_t K> struct Dense {
     for(int i = 0; i < InN; ++i) 
       for(int j = 0; j < OutN; ++j)
         w(i,j) = runif(rng);
+    b = runif(rng);
   }
 
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     input = in;
-    return in * w;
+    return (in * w).array() + b;
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     Eigen::MatrixXd grad = input.transpose() * in;
 
     w -= 0.01 * grad;
+    b -= 0.002 * in.sum();
     return  in * w.transpose();
   }
 
 private:
   Eigen::MatrixXd input;
   Eigen::MatrixXd w;
+  double b;
 };
 
 template <size_t N> struct Output {
@@ -63,12 +66,12 @@ template <size_t N> struct DropOut {
   Eigen::MatrixXd forward(const Eigen::MatrixXd &in) {
     if (stop)
       return in;
-    d = Eigen::MatrixXd::Zero(InN, 0).unaryExpr(getUniform);
-    return in * d.asDiagonal();
+    d = Eigen::MatrixXd::Zero(InN, OutN).unaryExpr(getUniform);
+    return in.array() * d.array();
   }
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
-    return in * d.asDiagonal();
+    return in.array() * d.array();
   }
 
 private:
