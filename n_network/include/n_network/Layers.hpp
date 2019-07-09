@@ -35,10 +35,10 @@ template <size_t N, size_t K> struct Dense {
 
   Eigen::MatrixXd backward(const Eigen::MatrixXd &in) {
     Eigen::MatrixXd grad = input.transpose() * in;
-
+    Eigen::MatrixXd temp = w;
     w -= 0.01 * grad;
     b -= 0.002 * in.sum();
-    return  in * w.transpose();
+    return  in * temp.transpose();
   }
 
 private:
